@@ -1,0 +1,42 @@
+app:
+  name: wos
+  port: 8080
+  model: debug
+  route_prefix: /
+
+log:
+  dir: /www/ftx-wsite
+  file_name: ftx.log
+  level: info
+  max_size: 1000 #mb
+  max_backups: 100
+  max_age: 60 # days
+  compress: false
+
+mysql:
+  url: root:root@tcp(127.0.0.1:3306)/wos?charset=utf8mb4&parseTime=True&loc=Local
+  # 表前缀
+  prefix: ''
+  # 设置连接池中的最大闲置连接数
+  max_idle_conns: 10
+  # 设置与数据库建立连接的最大数目
+  max_open_conns: 50
+  # 一个连接的最大时长，单位秒
+  conn_max_lifetime: 60
+  # 慢查询阈值,单位秒
+  slow_threshold: 3
+
+redis:
+  url: 127.0.0.1:6379
+  user_name: ""
+  pass_word: ""
+  db: 0
+
+csrf:
+  # 允许时间误差范围，毫秒
+  interval: 5000
+
+jwt:
+  sign_key: tHUqpxha1Dmqrs9A4nzAHtepmSfnA6cc
+  issuer: ftx
+
