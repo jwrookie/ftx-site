@@ -16,6 +16,8 @@ import (
 )
 
 func TestCsrf(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without csrf middleware", func(t *testing.T) {
 		r := gin.New()
 		r.POST("/", func(context *gin.Context) {})

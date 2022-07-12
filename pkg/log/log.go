@@ -1,6 +1,7 @@
 package log
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/foxdex/ftx-site/config"
@@ -54,6 +55,7 @@ func getConfigLogArgs() (zapcore.WriteSyncer, zapcore.Level) {
 		syncers = append(syncers, zapcore.AddSync(logger))
 	}
 
+	syncers = append(syncers, os.Stdout)
 	ws := zapcore.NewMultiWriteSyncer(syncers...)
 
 	return ws, level

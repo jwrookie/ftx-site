@@ -9,6 +9,8 @@ import (
 )
 
 func TestCors(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without cors middleware", func(t *testing.T) {
 		r := gin.New()
 		r.GET("/", func(context *gin.Context) {})

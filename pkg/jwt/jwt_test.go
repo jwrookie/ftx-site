@@ -13,7 +13,7 @@ func TestUserClaims(t *testing.T) {
 
 	var validToken string
 	t.Run("generator token should successfully", func(t *testing.T) {
-		uc := NewUserClaims("11", "22", 1)
+		uc := NewUserClaims("11", "22", "33")
 		tokenStr, err := uc.Generator()
 		assert.NoError(t, err)
 		assert.NotEmpty(t, tokenStr)
@@ -32,8 +32,8 @@ func TestUserClaims(t *testing.T) {
 		claims, err := uc.Parse(validToken)
 		assert.NoError(t, err)
 		assert.Equal(t, "11", claims.Email, "checking email")
-		assert.Equal(t, "22", claims.Personality, "checking personality")
-		assert.Equal(t, uint8(1), claims.KycLevel, "checking kycLevel")
+		assert.Equal(t, "22", claims.KycLevel, "checking kycLevel")
+		assert.Equal(t, "33", claims.Personality, "checking personality")
 		assert.Equal(t, "", claims.Prize, "checking prize")
 		assert.Equal(t, config.GetConfig().Jwt.Issuer, claims.Issuer, "checking issuer")
 		assert.InDelta(t, time.Now().Add(time.Hour*time.Duration(24*7)).Unix(), claims.ExpiresAt.Unix(), 10)

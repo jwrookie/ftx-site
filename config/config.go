@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	_ "embed"
+	"os"
 
 	"fmt"
 
@@ -108,6 +109,12 @@ func init() {
 	}
 
 	config = ftx
+
+	{
+		if os.Getenv("RUN_MODEL") == "release" {
+			config.App.Model = "release"
+		}
+	}
 
 	fmt.Printf("config: %v\n", config)
 }

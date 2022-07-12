@@ -5,7 +5,7 @@ app:
   route_prefix: /
 
 log:
-  dir: /www/ftx-wsite
+  dir: /www/ftx-wsite/logs
   file_name: ftx.log
   level: info
   max_size: 1000 #mb
