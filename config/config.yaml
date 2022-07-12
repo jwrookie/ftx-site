@@ -33,4 +33,3 @@ csrf:
 jwt:
   sign_key: tHUqpxha1Dmqrs9A4nzAHtepmSfnA6cc
   issuer: ftx
-
