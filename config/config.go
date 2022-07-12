@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var config ftxConfig
+var config FtxConfig
 
 //go:embed config.yaml
 var configBytes []byte
@@ -27,13 +27,6 @@ type mysqlConfig struct {
 	MaxOpenConns    int    `mapstructure:"max_open_conns"`
 	ConnMaxLifetime int    `mapstructure:"conn_max_lifetime"`
 	SlowThreshold   int    `mapstructure:"slow_threshold"`
-}
-
-type redisConfig struct {
-	Url      string `mapstructure:"url"`
-	UserName string `mapstructure:"user_name"`
-	PassWord string `mapstructure:"pass_word"`
-	DB       int    `mapstructure:"db"`
 }
 
 type jwtConfig struct {
@@ -62,17 +55,16 @@ type csrfConfig struct {
 	Interval uint32 `mapstructure:"interval"`
 }
 
-type ftxConfig struct {
+type FtxConfig struct {
 	App   appConfig
 	Log   logConfig
 	Mysql mysqlConfig
-	Redis redisConfig
 	Jwt   jwtConfig
 	Csrf  csrfConfig
 }
 
 func init() {
-	var ftx ftxConfig
+	var ftx FtxConfig
 	conf := viper.New()
 	conf.SetConfigType("yaml")
 
@@ -81,8 +73,8 @@ func init() {
 	}
 
 	{
-		logConf := conf.Sub("app")
-		if err := logConf.Unmarshal(&ftx.App); err != nil {
+		appConf := conf.Sub("app")
+		if err := appConf.Unmarshal(&ftx.App); err != nil {
 			panic(err)
 		}
 	}
@@ -95,29 +87,22 @@ func init() {
 	}
 
 	{
-		logConf := conf.Sub("mysql")
-		if err := logConf.Unmarshal(&ftx.Mysql); err != nil {
+		mysqlConf := conf.Sub("mysql")
+		if err := mysqlConf.Unmarshal(&ftx.Mysql); err != nil {
 			panic(err)
 		}
 	}
 
 	{
-		logConf := conf.Sub("redis")
-		if err := logConf.Unmarshal(&ftx.Redis); err != nil {
+		jwtConf := conf.Sub("jwt")
+		if err := jwtConf.Unmarshal(&ftx.Jwt); err != nil {
 			panic(err)
 		}
 	}
 
 	{
-		logConf := conf.Sub("jwt")
-		if err := logConf.Unmarshal(&ftx.Jwt); err != nil {
-			panic(err)
-		}
-	}
-
-	{
-		logConf := conf.Sub("csrf")
-		if err := logConf.Unmarshal(&ftx.Csrf); err != nil {
+		csrfConf := conf.Sub("csrf")
+		if err := csrfConf.Unmarshal(&ftx.Csrf); err != nil {
 			panic(err)
 		}
 	}
@@ -127,7 +112,7 @@ func init() {
 	fmt.Printf("config: %v\n", config)
 }
 
-func GetConfig() ftxConfig {
+func GetConfig() FtxConfig {
 	return config
 }
 

@@ -14,10 +14,11 @@ func NewRoute(api *gin.Engine) {
 	root := api.Group(conf.App.Model)
 
 	{
-		lucky := root.Group("/lucky")
+		lucky := root.Group("/lucky", Csrf())
 		lucky.POST("/token", luckyDrawHandler.CreateToken)
 		lucky.POST("/draw", luckyDrawHandler.Draw)
 		lucky.POST("/award", luckyDrawHandler.Award)
 		lucky.GET("/:email", luckyDrawHandler.GetResult)
+		lucky.GET("/jackpot", luckyDrawHandler.GetJackpot)
 	}
 }

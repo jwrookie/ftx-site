@@ -23,3 +23,8 @@ func (h *LuckyDrawHandler) Award(ctx *gin.Context) {
 func (h *LuckyDrawHandler) GetResult(ctx *gin.Context) {
 
 }
+
+// GetJackpot get jackpot
+func (h *LuckyDrawHandler) GetJackpot(ctx *gin.Context) {
+
+}
