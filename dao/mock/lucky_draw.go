@@ -64,6 +64,21 @@ func (mr *MockILuckyMockRecorder) Create(db, model interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockILucky)(nil).Create), db, model)
 }
 
+// EmailExist mocks base method.
+func (m *MockILucky) EmailExist(db *gorm.DB, email string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailExist", db, email)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EmailExist indicates an expected call of EmailExist.
+func (mr *MockILuckyMockRecorder) EmailExist(db, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailExist", reflect.TypeOf((*MockILucky)(nil).EmailExist), db, email)
+}
+
 // GetByEmail mocks base method.
 func (m *MockILucky) GetByEmail(db *gorm.DB, email string) (*dao.LuckyModel, error) {
 	m.ctrl.T.Helper()
@@ -77,4 +92,18 @@ func (m *MockILucky) GetByEmail(db *gorm.DB, email string) (*dao.LuckyModel, err
 func (mr *MockILuckyMockRecorder) GetByEmail(db, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockILucky)(nil).GetByEmail), db, email)
+}
+
+// Update mocks base method.
+func (m *MockILucky) Update(db *gorm.DB, email string, updates map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", db, email, updates)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockILuckyMockRecorder) Update(db, email, updates interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockILucky)(nil).Update), db, email, updates)
 }

@@ -21,6 +21,7 @@ type LuckyGetResultRsp struct {
 }
 
 type LuckyAwardReq struct {
+	Prize       string `json:"prize" form:"prize" binding:"oneof='FTX x MLB棒球外套' 'FTX束口袋背包' 'FTX棒球帽' 'FTX灰色T恤' '交易手续费抵扣券10USD' 'FTX小龙人暖手充电宝' 'FTX雪花真空杯' 'FTX超萌小耳朵发箍 + 小金勺子'"`
 	ClothesSize string `json:"clothes_size" form:"clothes_size"`
 	UserName    string `json:"user_name" form:"user_name" binding:"required"`
 	UserPhone   string `json:"user_phone" form:"user_phone" binding:"required"`
@@ -37,5 +38,4 @@ type LuckyGetJackpotRsp struct {
 
 type LuckyDrawRsp struct {
 	Prize string `json:"prize"`
-	Token string `json:"token"`
 }

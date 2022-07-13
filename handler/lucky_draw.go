@@ -54,82 +54,27 @@ func (h *LuckyDrawHandler) CreateToken(c *gin.Context) {
 func (h *LuckyDrawHandler) Draw(c *gin.Context) {
 	var (
 		model dao.LuckyModel
+		exist bool
 		err   error
 	)
 
 	claims := c.MustGet(consts.HeaderDRAWTOKEN).(*jwt.UserClaims)
-	if claims.Prize != "" {
+	if exist, err = h.luckyDao.EmailExist(db.Mysql(), claims.Email); err != nil {
+		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if exist {
 		dto.FailResponse(c, http.StatusBadRequest, "lottery has been conducted")
 		return
 	}
 
 	prize := lucky.Draw()
-	claims.Prize = prize
-
-	if prize == lucky.Prize1000 {
-		if err = mapstructure.Decode(claims, &model); err != nil {
-			dto.FailResponse(c, http.StatusInternalServerError, err.Error())
-			log.Log.Error("decode error", zap.Error(err), zap.Any("input", claims))
-			return
-		}
-
-		if err = h.luckyDao.Create(db.Mysql(), &model); err != nil {
-			dto.FailResponse(c, http.StatusInternalServerError, err.Error())
-			log.Log.Error("create lucky", zap.Error(err))
-			return
-		}
-	}
-
-	token, err := claims.Generator()
-	if err != nil {
-		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
-		log.Log.Error("create json web token error", zap.Error(err))
-		return
-	}
-
-	dto.SuccessResponse(c, &dto.LuckyDrawRsp{
-		Prize: prize,
-		Token: token,
-	})
-}
-
-// Award receive your award
-func (h *LuckyDrawHandler) Award(c *gin.Context) {
-	var (
-		req    dto.LuckyAwardReq
-		model  dao.LuckyModel
-		err    error
-		claims = c.MustGet(consts.HeaderDRAWTOKEN).(*jwt.UserClaims)
-	)
-	if err = c.ShouldBind(&req); err != nil {
-		dto.FailResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if err = mapstructure.Decode(req, &model); err != nil {
-		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
-		log.Log.Error("decode error", zap.Error(err), zap.Any("input", req))
-		return
-	}
+	model.Prize = prize
 
 	if err = mapstructure.Decode(claims, &model); err != nil {
 		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
 		log.Log.Error("decode error", zap.Error(err), zap.Any("input", claims))
-		return
-	}
-
-	if err = lucky.CheckPrize(model.Prize); err != nil {
-		dto.FailResponse(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if model.Prize == lucky.Prize40 && model.ClothesSize == "" {
-		dto.FailResponse(c, http.StatusBadRequest, "clothes size is required when prize is FTX灰色T恤")
-		return
-	}
-
-	if model.Prize == lucky.Prize1000 {
-		dto.FailResponse(c, http.StatusBadRequest, "invalid prize")
 		return
 	}
 
@@ -139,7 +84,42 @@ func (h *LuckyDrawHandler) Award(c *gin.Context) {
 		return
 	}
 
-	dto.SuccessResponse(c, &model)
+	dto.SuccessResponse(c, &dto.LuckyDrawRsp{
+		Prize: prize,
+	})
+}
+
+// Award receive your award
+func (h *LuckyDrawHandler) Award(c *gin.Context) {
+	var (
+		req    dto.LuckyAwardReq
+		err    error
+		claims = c.MustGet(consts.HeaderDRAWTOKEN).(*jwt.UserClaims)
+	)
+	if err = c.ShouldBind(&req); err != nil {
+		dto.FailResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.Prize == lucky.Prize40 && req.ClothesSize == "" {
+		dto.FailResponse(c, http.StatusBadRequest, "clothes size is required when prize is FTX灰色T恤")
+		return
+	}
+
+	updates := map[string]interface{}{
+		"clothes_size": req.ClothesSize,
+		"user_name":    req.UserName,
+		"user_phone":   req.UserPhone,
+		"address":      req.Address,
+	}
+
+	if err = h.luckyDao.Update(db.Mysql(), claims.Email, updates); err != nil {
+		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
+		log.Log.Error("update lucky", zap.Error(err))
+		return
+	}
+
+	dto.SuccessResponse(c, nil)
 }
 
 // GetResult check if you have won a prize

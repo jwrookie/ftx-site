@@ -23,7 +23,9 @@ type LuckyModel struct {
 
 type ILucky interface {
 	GetByEmail(db *gorm.DB, email string) (*LuckyModel, error)
+	EmailExist(db *gorm.DB, email string) (bool, error)
 	Create(db *gorm.DB, model *LuckyModel) error
+	Update(db *gorm.DB, email string, updates map[string]interface{}) error
 	Count(db *gorm.DB) (int64, error)
 }
 
@@ -70,4 +72,25 @@ func (l *LuckyHandler) Count(db *gorm.DB) (int64, error) {
 	}
 
 	return count, nil
+}
+
+func (l *LuckyHandler) EmailExist(db *gorm.DB, email string) (bool, error) {
+	var (
+		err   error
+		count int64
+	)
+	if err = db.Table("lucky").Where("email = ?", email).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+func (l *LuckyHandler) Update(db *gorm.DB, email string, updates map[string]interface{}) error {
+	var err error
+	if err = db.Table("lucky").Where("email = ?", email).UpdateColumns(updates).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

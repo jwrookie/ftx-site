@@ -17,7 +17,6 @@ type UserClaims struct {
 	Email       string `json:"email"`
 	KycLevel    string `json:"kyc_level"`
 	Personality string `json:"personality"`
-	Prize       string `json:"prize"`
 	jwt.RegisteredClaims
 }
 

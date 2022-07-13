@@ -14,11 +14,6 @@ func Ticket() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var claims *jwt.UserClaims
 		token := ctx.GetHeader(consts.HeaderDRAWTOKEN)
-		if gin.IsDebugging() && token == "lwhbjvf4hiqgeulbakjrq54fwelfn11ksdfj65ksdg63lgrndlkKE2FJLFK" {
-			ctx.Next()
-			return
-		}
-
 		claims, err := claims.Parse(token)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, dto.ResponseFormat{Code: 1, Msg: err.Error()})

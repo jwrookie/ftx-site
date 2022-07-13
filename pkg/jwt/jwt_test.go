@@ -34,7 +34,6 @@ func TestUserClaims(t *testing.T) {
 		assert.Equal(t, "11", claims.Email, "checking email")
 		assert.Equal(t, "22", claims.KycLevel, "checking kycLevel")
 		assert.Equal(t, "33", claims.Personality, "checking personality")
-		assert.Equal(t, "", claims.Prize, "checking prize")
 		assert.Equal(t, config.GetConfig().Jwt.Issuer, claims.Issuer, "checking issuer")
 		assert.InDelta(t, time.Now().Add(time.Hour*time.Duration(24*7)).Unix(), claims.ExpiresAt.Unix(), 10)
 	})

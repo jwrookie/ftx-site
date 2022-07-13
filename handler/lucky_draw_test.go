@@ -10,9 +10,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
-
-	"github.com/foxdex/ftx-site/config"
 
 	"github.com/foxdex/ftx-site/pkg/lucky"
 
@@ -203,42 +200,31 @@ func TestAward(t *testing.T) {
 		name        string
 		status      int
 		errorReason string
-		prize       string
 		lucky       *LuckyDrawHandler
 		payload     *dto.LuckyAwardReq
 		mockFn      func(*TestCase)
 	}
 
-	luckyModel := &dao.LuckyModel{
-		Email:       "123@gmail.com",
-		KycLevel:    "KYC2",
-		Personality: "IATC",
-		Prize:       lucky.Prize30,
-		ClothesSize: "",
-		UserName:    "jw",
-		UserPhone:   "12311112222",
-		Address:     "xx省xx市xx区xxxx小区",
-	}
-
 	cases := []TestCase{
-		{
-			name:        "invalid params",
-			status:      http.StatusBadRequest,
-			errorReason: `Error:Field validation for 'Address' failed on the 'required' tag`,
-			payload: &dto.LuckyAwardReq{
-				UserName:  "jw",
-				UserPhone: "12311112222",
-			},
-			prize: lucky.Prize30,
-		},
 		{
 			name:        "invalid prize",
 			status:      http.StatusBadRequest,
-			errorReason: "invalid prize name",
+			errorReason: `Error:Field validation for 'Prize' failed on the 'oneof' tag`,
 			payload: &dto.LuckyAwardReq{
+				Prize:     lucky.Prize1000,
 				UserName:  "jw",
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
+			},
+		},
+		{
+			name:        "invalid address",
+			status:      http.StatusBadRequest,
+			errorReason: `Error:Field validation for 'Address' failed on the 'required' tag`,
+			payload: &dto.LuckyAwardReq{
+				Prize:     lucky.Prize40,
+				UserName:  "jw",
+				UserPhone: "12311112222",
 			},
 		},
 		{
@@ -246,62 +232,48 @@ func TestAward(t *testing.T) {
 			status:      http.StatusBadRequest,
 			errorReason: "clothes size is required when prize is FTX灰色T恤",
 			payload: &dto.LuckyAwardReq{
+				Prize:     lucky.Prize40,
 				UserName:  "jw",
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
 			},
-			prize: lucky.Prize40,
-		},
-		{
-			name:        "invalid request",
-			status:      http.StatusBadRequest,
-			errorReason: "invalid prize",
-			payload: &dto.LuckyAwardReq{
-				UserName:  "jw",
-				UserPhone: "12311112222",
-				Address:   "xx省xx市xx区xxxx小区",
-			},
-			prize: lucky.Prize1000,
 		},
 		{
 			name:        "db mock error",
 			status:      http.StatusInternalServerError,
 			errorReason: `mock error`,
 			payload: &dto.LuckyAwardReq{
+				Prize:     lucky.Prize50,
 				UserName:  "jw",
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
 			},
-			prize: lucky.Prize30,
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
-				luckyDao.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("mock error"))
+				luckyDao.EXPECT().Update(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("mock error"))
 			},
 		},
 		{
 			name:   "success",
 			status: http.StatusOK,
 			payload: &dto.LuckyAwardReq{
+				Prize:     lucky.Prize50,
 				UserName:  "jw",
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
 			},
-			prize: lucky.Prize30,
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
 
-				input := &dao.LuckyModel{
-					UserName:    "jw",
-					UserPhone:   "12311112222",
-					Address:     "xx省xx市xx区xxxx小区",
-					Prize:       lucky.Prize30,
-					Email:       "123@gmail.com",
-					KycLevel:    "KYC2",
-					Personality: "IATC",
+				input := map[string]interface{}{
+					"user_name":    "jw",
+					"user_phone":   "12311112222",
+					"address":      "xx省xx市xx区xxxx小区",
+					"clothes_size": "",
 				}
-				luckyDao.EXPECT().Create(gomock.Any(), input).Return(nil)
+				luckyDao.EXPECT().Update(gomock.Any(), "123@gmail.com", input).Return(nil)
 			},
 		},
 	}
@@ -316,7 +288,6 @@ func TestAward(t *testing.T) {
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 
 			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC")
-			claims.Prize = tc.prize
 			c.Set(consts.HeaderDRAWTOKEN, claims)
 
 			if tc.mockFn != nil {
@@ -329,16 +300,7 @@ func TestAward(t *testing.T) {
 			assert.Nil(t, json.Unmarshal(w.Body.Bytes(), &rw), "unmarshalling response body")
 			if tc.errorReason != "" {
 				assert.Contains(t, rw.Msg, tc.errorReason, "checking error reason")
-				return
 			}
-
-			var newLucky dto.LuckyAwardRsp
-			data, err := json.Marshal(rw.Data)
-			assert.NoError(t, err)
-			err = json.Unmarshal(data, &newLucky)
-			assert.NoError(t, err)
-			diff := cmp.Diff(*luckyModel, newLucky.LuckyModel)
-			assert.Empty(t, diff, "check lucky model")
 		})
 	}
 }
@@ -374,17 +336,30 @@ func TestDraw(t *testing.T) {
 		name        string
 		status      int
 		errorReason string
-		prize       string
 		lucky       *LuckyDrawHandler
 		mockFn      func(*TestCase)
 	}
 
 	cases := []TestCase{
 		{
+			name:        "check email exist error",
+			status:      http.StatusInternalServerError,
+			errorReason: `mock error`,
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(false, errors.New("mock error"))
+			},
+		},
+		{
 			name:        "lottery has been conducted",
 			status:      http.StatusBadRequest,
 			errorReason: `lottery has been conducted`,
-			prize:       lucky.Prize30,
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(true, nil)
+			},
 		},
 		{
 			name:        "db mock error",
@@ -399,6 +374,7 @@ func TestDraw(t *testing.T) {
 					KycLevel:    "KYC2",
 					Personality: "IATC",
 				}
+				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(false, nil)
 				luckyDao.EXPECT().Create(gomock.Any(), input).Return(errors.New("mock error"))
 			},
 		},
@@ -414,6 +390,7 @@ func TestDraw(t *testing.T) {
 					KycLevel:    "KYC2",
 					Personality: "IATC",
 				}
+				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(false, nil)
 				luckyDao.EXPECT().Create(gomock.Any(), input).Return(nil)
 			},
 		},
@@ -430,7 +407,6 @@ func TestDraw(t *testing.T) {
 			c.Request.Header.Set("Content-Type", "application/json")
 
 			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC")
-			claims.Prize = tc.prize
 			c.Set(consts.HeaderDRAWTOKEN, claims)
 
 			if tc.mockFn != nil {
@@ -452,16 +428,6 @@ func TestDraw(t *testing.T) {
 			err = json.Unmarshal(data, &rsp)
 			assert.NoError(t, err)
 			assert.Equal(t, lucky.Prize1000, rsp.Prize, "checking prize")
-
-			var uc *jwt.UserClaims
-			newClaims, err := uc.Parse(rsp.Token)
-			assert.NoError(t, err)
-			assert.Equal(t, "123@gmail.com", newClaims.Email, "checking email")
-			assert.Equal(t, "KYC2", newClaims.KycLevel, "checking kycLevel")
-			assert.Equal(t, "IATC", newClaims.Personality, "checking personality")
-			assert.Equal(t, lucky.Prize1000, newClaims.Prize, "checking prize")
-			assert.Equal(t, config.GetConfig().Jwt.Issuer, newClaims.Issuer, "checking issuer")
-			assert.InDelta(t, time.Now().Add(time.Hour*time.Duration(24*7)).Unix(), newClaims.ExpiresAt.Unix(), 10)
 		})
 	}
 }
