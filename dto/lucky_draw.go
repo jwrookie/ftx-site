@@ -13,7 +13,7 @@ type LuckyCreateTokenRsp struct {
 }
 
 type LuckyGetResultReq struct {
-	Email string `json:"email" form:"email" binding:"required,email"`
+	Email string `form:"email" uri:"email" binding:"required,email"`
 }
 
 type LuckyGetResultRsp struct {
@@ -29,4 +29,8 @@ type LuckyAwardReq struct {
 
 type LuckyAwardRsp struct {
 	dao.LuckyModel `json:",inline" mapstructure:",squash"`
+}
+
+type LuckyGetJackpotRsp struct {
+	Jackpot uint64 `json:"jackpot,string"`
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -105,8 +106,8 @@ func TestResult(t *testing.T) {
 		status      int
 		errorReason string
 		lucky       *LuckyDrawHandler
-		payload     *dto.LuckyGetResultReq
 		mockFn      func(*TestCase)
+		email       string
 	}
 
 	luckyModel := &dao.LuckyModel{
@@ -129,17 +130,13 @@ func TestResult(t *testing.T) {
 			name:        "when email is invalid, should get 400",
 			status:      http.StatusBadRequest,
 			errorReason: `Field validation for 'Email' failed on the 'email' tag`,
-			payload: &dto.LuckyGetResultReq{
-				Email: "invalid",
-			},
+			email:       "invalid",
 		},
 		{
 			name:        "get lucky model by email error",
 			status:      http.StatusBadRequest,
 			errorReason: `mock error`,
-			payload: &dto.LuckyGetResultReq{
-				Email: "123@gmail.com",
-			},
+			email:       "123@gmail.com",
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
@@ -149,9 +146,7 @@ func TestResult(t *testing.T) {
 		{
 			name:   "success",
 			status: http.StatusOK,
-			payload: &dto.LuckyGetResultReq{
-				Email: "123@gmail.com",
-			},
+			email:  "123@gmail.com",
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
@@ -164,11 +159,13 @@ func TestResult(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Request, _ = http.NewRequest("POST", "/lucky/token", nil)
-			c.Request.Header.Set("Content-Type", "application/json")
-			body, _ := json.Marshal(tc.payload)
-			c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-
+			c.Params = gin.Params{
+				{
+					Key:   "email",
+					Value: tc.email,
+				},
+			}
+			c.Request, _ = http.NewRequest("GET", fmt.Sprintf("/lucky/%s", tc.email), nil)
 			if tc.mockFn != nil {
 				tc.mockFn(&tc)
 			}
@@ -317,4 +314,27 @@ func TestAward(t *testing.T) {
 			assert.Empty(t, diff, "check lucky model")
 		})
 	}
+}
+
+func TestGetJackpot(t *testing.T) {
+	mockDao := mock.NewMockILucky(gomock.NewController(t))
+	mockDao.EXPECT().Count(gomock.Any()).Return(int64(0), nil)
+	lucky := &LuckyDrawHandler{mockDao}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/lucky/jackpot", nil)
+
+	lucky.GetJackpot(c)
+	assert.Equal(t, 200, w.Code, "checking status code")
+
+	var rw dto.ResponseFormat
+	assert.Nil(t, json.Unmarshal(w.Body.Bytes(), &rw), "unmarshalling response body")
+
+	var rsp dto.LuckyGetJackpotRsp
+	data, err := json.Marshal(rw.Data)
+	assert.NoError(t, err)
+	err = json.Unmarshal(data, &rsp)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(5000), rsp.Jackpot)
 }

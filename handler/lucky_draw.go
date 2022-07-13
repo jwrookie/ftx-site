@@ -3,6 +3,8 @@ package handler
 import (
 	"net/http"
 
+	"github.com/foxdex/ftx-site/pkg/lucky"
+
 	"github.com/foxdex/ftx-site/pkg/consts"
 
 	"github.com/mitchellh/mapstructure"
@@ -98,7 +100,7 @@ func (h *LuckyDrawHandler) GetResult(c *gin.Context) {
 		req dto.LuckyGetResultReq
 		rsp dto.LuckyGetResultRsp
 	)
-	if err := c.ShouldBind(&req); err != nil {
+	if err := c.ShouldBindUri(&req); err != nil {
 		dto.FailResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -121,5 +123,6 @@ func (h *LuckyDrawHandler) GetResult(c *gin.Context) {
 
 // GetJackpot get jackpot
 func (h *LuckyDrawHandler) GetJackpot(c *gin.Context) {
-
+	lucky.InitJackpot(h.luckyDao)
+	dto.SuccessResponse(c, &dto.LuckyGetJackpotRsp{Jackpot: lucky.GetJackpot()})
 }
