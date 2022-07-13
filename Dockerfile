@@ -4,11 +4,11 @@ ENV GO111MODULE=on
 ENV GOPROXY="https://goproxy.cn,direct"
 WORKDIR /go/release
 COPY . .
-RUN go mod tidy
+RUN go mod tidy -compat=1.17
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ftx-site main.go
 
-FROM scratch
+FROM alpine
 
 WORKDIR /www/ftx-wsite
 ENV TIME_ZONE=Asia/Shanghai

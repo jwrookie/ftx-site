@@ -2,22 +2,22 @@ version: "3"
 
 services:
   ftx-back:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ftx-site:latest
     ports:
       - "8080:8080"
       - "127.0.0.1:8081:8081" # 预留给pprof
+    restart: always
     networks:
       - ftx
     volumes:
-      - /www/ftx-site/logs:/www/ftx-site/logs
+      - /var/ftx-site/logs:/www/ftx-site/logs
     links:
       - mysql
     depends_on:
       - mysql
   mysql:
     image: "mysql:8.0"
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: "%"
@@ -27,8 +27,8 @@ services:
       - ftx
     volumes:
       - /etc/localtime:/etc/localtime
-      - /www/ftx-site/mysql/cnf:/etc/mysql/conf.d
-      - /www/ftx-site/mysql/data:/var/lib/mysql
+      - /var/ftx-site/mysql/cnf:/etc/mysql/conf.d
+      - /var/ftx-site/mysql/data:/var/lib/mysql
 
 networks:
   ftx:

@@ -75,15 +75,13 @@ func setup() {
 		})
 	}()
 
-	go func() {
-		if err := httpSrv.ListenAndServe(); err != nil {
-			if err != http.ErrServerClosed {
-				log.Log.Fatal("failed to run status server",
-					zap.Error(err),
-				)
-			}
+	if err := httpSrv.ListenAndServe(); err != nil {
+		if err != http.ErrServerClosed {
+			log.Log.Fatal("failed to run status server",
+				zap.Error(err),
+			)
 		}
-	}()
+	}
 }
 
 func initApp() {

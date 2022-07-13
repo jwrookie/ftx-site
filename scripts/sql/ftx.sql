@@ -1,9 +1,9 @@
-CREATE DATABASE `ftx` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ftx` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `lucky` (
     `lucky_id` bigint(20) unsigned NOT NULL COMMENT '主键',
     `email` varchar(255) NOT NULL DEFAULT '' COMMENT '邮箱',
-    `kyc_level` varchar(10) unsigned NOT NULL DEFAULT '' COMMENT 'kyc 账号等级',
+    `kyc_level` varchar(10) NOT NULL DEFAULT '' COMMENT 'kyc 账号等级',
     `personality` varchar(10) NOT NULL DEFAULT '' COMMENT '人格',
     `prize` varchar(255) NOT NULL DEFAULT '' COMMENT '奖品',
     `clothes_size` varchar(10) NOT NULL DEFAULT '' COMMENT '衣服尺码，仅当奖品为衣服时，该字段才有意义',

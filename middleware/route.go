@@ -13,7 +13,7 @@ func NewRoute(api *gin.Engine) {
 	api.Use(Recovery())
 
 	conf := config.GetConfig()
-	root := api.Group(conf.App.Model)
+	root := api.Group(conf.App.RoutePrefix)
 
 	{
 		lucky := root.Group("/lucky", Csrf())
