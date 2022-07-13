@@ -10,7 +10,7 @@ func NewRoute(api *gin.Engine) {
 	var (
 		luckyDrawHandler = handler.DefaultLuckyDrawHandler
 	)
-	api.Use(Recovery())
+	api.Use(Logger(), Recovery())
 
 	conf := config.GetConfig()
 	root := api.Group(conf.App.RoutePrefix)
