@@ -11,7 +11,7 @@ services:
     networks:
       - ftx
     volumes:
-      - /var/ftx-wsite/logs:/www/ftx-wsite/logs
+      - /www/ftx-site/logs:/www/ftx-site/logs
     links:
       - mysql
     depends_on:
@@ -27,8 +27,8 @@ services:
       - ftx
     volumes:
       - /etc/localtime:/etc/localtime
-      - /var/mysql/cnf:/etc/mysql/conf.d
-      - /var/mysql/data:/var/lib/mysql
+      - /www/ftx-site/mysql/cnf:/etc/mysql/conf.d
+      - /www/ftx-site/mysql/data:/var/lib/mysql
 
 networks:
   ftx:

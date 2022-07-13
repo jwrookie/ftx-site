@@ -15,7 +15,7 @@ var (
 	Sugar *zap.SugaredLogger
 )
 
-func InitLog() {
+func init() {
 	ws, level := getConfigLogArgs()
 	encoderConf := zap.NewProductionEncoderConfig()
 	encoderConf.EncodeTime = zapcore.ISO8601TimeEncoder

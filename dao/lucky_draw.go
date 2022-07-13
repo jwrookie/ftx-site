@@ -6,19 +6,19 @@ import (
 )
 
 type LuckyModel struct {
-	LuckyId     uint64 `gorm:"primaryKey"`
-	Email       string
-	KycLevel    string
-	Personality string
-	Prize       string
-	ClothesSize string
-	UserName    string
-	UserPhone   string
-	Address     string
+	LuckyId     uint64 `json:"lucky_id,string" gorm:"primaryKey"`
+	Email       string `json:"email"`
+	KycLevel    string `json:"kyc_level"`
+	Personality string `json:"personality"`
+	Prize       string `json:"prize"`
+	ClothesSize string `json:"clothes_size"`
+	UserName    string `json:"user_name"`
+	UserPhone   string `json:"user_phone"`
+	Address     string `json:"address"`
 
-	CreatedAt uint64
-	UpdatedAt uint64
-	DeletedAt uint64
+	CreatedAt uint64 `json:"created_at"`
+	UpdatedAt uint64 `json:"updated_at"`
+	DeletedAt uint64 `json:"deleted_at"`
 }
 
 type ILucky interface {

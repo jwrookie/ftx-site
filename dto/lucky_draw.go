@@ -1,20 +1,6 @@
 package dto
 
-type LuckyDto struct {
-	LuckyId     uint64 `json:"lucky_id,string"`
-	Email       string `json:"email"`
-	KycLevel    string `json:"kyc_level"`
-	Personality string `json:"personality"`
-	Prize       string `json:"prize"`
-	ClothesSize string `json:"clothes_size"`
-	UserName    string `json:"user_name"`
-	UserPhone   string `json:"user_phone"`
-	Address     string `json:"address"`
-
-	CreatedAt uint64 `json:"created_at"`
-	UpdatedAt uint64 `json:"updated_at"`
-	DeletedAt uint64 `json:"deleted_at"`
-}
+import "github.com/foxdex/ftx-site/dao"
 
 type LuckyCreateTokenReq struct {
 	Email       string `json:"email" form:"email" binding:"required,email"`
@@ -31,11 +17,7 @@ type LuckyGetResultReq struct {
 }
 
 type LuckyGetResultRsp struct {
-	LuckyDto
-	// 脱敏处理
-	UserName  string `json:"-"`
-	UserPhone string `json:"-"`
-	Address   string `json:"-"`
+	dao.LuckyModel `json:",inline" mapstructure:",squash"`
 }
 
 type LuckyAwardReq struct {
@@ -46,5 +28,5 @@ type LuckyAwardReq struct {
 }
 
 type LuckyAwardRsp struct {
-	LuckyDto
+	dao.LuckyModel `json:",inline" mapstructure:",squash"`
 }

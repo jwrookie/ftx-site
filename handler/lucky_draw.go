@@ -20,8 +20,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var DefaultLuckyDrawHandler = &LuckyDrawHandler{
+	luckyDao: &dao.LuckyHandler{},
+}
+
 type LuckyDrawHandler struct {
-	luckyDao dao.LuckyHandler
+	luckyDao dao.ILucky
 }
 
 // CreateToken get qualified for the lottery.
@@ -74,9 +78,15 @@ func (h *LuckyDrawHandler) Award(c *gin.Context) {
 		return
 	}
 
+	if model.Prize == "FTX灰色T恤" && model.ClothesSize == "" {
+		dto.FailResponse(c, http.StatusBadRequest, "clothes size is required when prize is FTX灰色T恤")
+		return
+	}
+
 	if err = h.luckyDao.Create(db.Mysql(), &model); err != nil {
 		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
 		log.Log.Error("create lucky", zap.Error(err))
+		return
 	}
 
 	dto.SuccessResponse(c, &model)

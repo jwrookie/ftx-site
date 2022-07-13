@@ -8,8 +8,10 @@ import (
 
 func NewRoute(api *gin.Engine) {
 	var (
-		luckyDrawHandler handler.LuckyDrawHandler
+		luckyDrawHandler = handler.DefaultLuckyDrawHandler
 	)
+	api.Use(Recovery())
+
 	conf := config.GetConfig()
 	root := api.Group(conf.App.Model)
 

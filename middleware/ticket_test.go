@@ -39,7 +39,7 @@ func TestTicket(t *testing.T) {
 		assert.Equal(t, w.Code, 403)
 	})
 
-	t.Run("ticket is invalid", func(t *testing.T) {
+	t.Run("ticket is valid", func(t *testing.T) {
 		r := gin.New()
 		r.Use(Ticket())
 		r.POST("/", func(context *gin.Context) {})

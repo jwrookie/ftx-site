@@ -87,7 +87,6 @@ func setup() {
 }
 
 func initApp() {
-	log.InitLog()
 	db.NewMysql()
 }
 
