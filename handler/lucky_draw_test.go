@@ -8,7 +8,13 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+	"time"
+
+	"github.com/foxdex/ftx-site/config"
+
+	"github.com/foxdex/ftx-site/pkg/lucky"
 
 	"github.com/foxdex/ftx-site/pkg/consts"
 	"github.com/foxdex/ftx-site/pkg/jwt"
@@ -115,7 +121,7 @@ func TestResult(t *testing.T) {
 		Email:       "123@gmail.com",
 		KycLevel:    "KYC2",
 		Personality: "IATC",
-		Prize:       "FTX棒球帽",
+		Prize:       lucky.Prize30,
 		ClothesSize: "",
 		UserName:    "JW",
 		UserPhone:   "12311112222",
@@ -207,7 +213,7 @@ func TestAward(t *testing.T) {
 		Email:       "123@gmail.com",
 		KycLevel:    "KYC2",
 		Personality: "IATC",
-		Prize:       "FTX棒球帽",
+		Prize:       lucky.Prize30,
 		ClothesSize: "",
 		UserName:    "jw",
 		UserPhone:   "12311112222",
@@ -223,7 +229,17 @@ func TestAward(t *testing.T) {
 				UserName:  "jw",
 				UserPhone: "12311112222",
 			},
-			prize: "FTX棒球帽",
+			prize: lucky.Prize30,
+		},
+		{
+			name:        "invalid prize",
+			status:      http.StatusBadRequest,
+			errorReason: "invalid prize name",
+			payload: &dto.LuckyAwardReq{
+				UserName:  "jw",
+				UserPhone: "12311112222",
+				Address:   "xx省xx市xx区xxxx小区",
+			},
 		},
 		{
 			name:        "clothes size is required when prize is FTX灰色T恤",
@@ -234,7 +250,18 @@ func TestAward(t *testing.T) {
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
 			},
-			prize: "FTX灰色T恤",
+			prize: lucky.Prize40,
+		},
+		{
+			name:        "invalid request",
+			status:      http.StatusBadRequest,
+			errorReason: "invalid prize",
+			payload: &dto.LuckyAwardReq{
+				UserName:  "jw",
+				UserPhone: "12311112222",
+				Address:   "xx省xx市xx区xxxx小区",
+			},
+			prize: lucky.Prize1000,
 		},
 		{
 			name:        "db mock error",
@@ -245,7 +272,7 @@ func TestAward(t *testing.T) {
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
 			},
-			prize: "FTX棒球帽",
+			prize: lucky.Prize30,
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
@@ -260,7 +287,7 @@ func TestAward(t *testing.T) {
 				UserPhone: "12311112222",
 				Address:   "xx省xx市xx区xxxx小区",
 			},
-			prize: "FTX棒球帽",
+			prize: lucky.Prize30,
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
@@ -269,7 +296,7 @@ func TestAward(t *testing.T) {
 					UserName:    "jw",
 					UserPhone:   "12311112222",
 					Address:     "xx省xx市xx区xxxx小区",
-					Prize:       "FTX棒球帽",
+					Prize:       lucky.Prize30,
 					Email:       "123@gmail.com",
 					KycLevel:    "KYC2",
 					Personality: "IATC",
@@ -319,13 +346,13 @@ func TestAward(t *testing.T) {
 func TestGetJackpot(t *testing.T) {
 	mockDao := mock.NewMockILucky(gomock.NewController(t))
 	mockDao.EXPECT().Count(gomock.Any()).Return(int64(0), nil)
-	lucky := &LuckyDrawHandler{mockDao}
+	handler := &LuckyDrawHandler{mockDao}
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/lucky/jackpot", nil)
 
-	lucky.GetJackpot(c)
+	handler.GetJackpot(c)
 	assert.Equal(t, 200, w.Code, "checking status code")
 
 	var rw dto.ResponseFormat
@@ -337,4 +364,104 @@ func TestGetJackpot(t *testing.T) {
 	err = json.Unmarshal(data, &rsp)
 	assert.NoError(t, err)
 	assert.Equal(t, uint64(5000), rsp.Jackpot)
+
+}
+
+func TestDraw(t *testing.T) {
+	t.Parallel()
+
+	type TestCase struct {
+		name        string
+		status      int
+		errorReason string
+		prize       string
+		lucky       *LuckyDrawHandler
+		mockFn      func(*TestCase)
+	}
+
+	cases := []TestCase{
+		{
+			name:        "lottery has been conducted",
+			status:      http.StatusBadRequest,
+			errorReason: `lottery has been conducted`,
+			prize:       lucky.Prize30,
+		},
+		{
+			name:        "db mock error",
+			status:      http.StatusInternalServerError,
+			errorReason: `mock error`,
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				input := &dao.LuckyModel{
+					Prize:       lucky.Prize1000,
+					Email:       "123@gmail.com",
+					KycLevel:    "KYC2",
+					Personality: "IATC",
+				}
+				luckyDao.EXPECT().Create(gomock.Any(), input).Return(errors.New("mock error"))
+			},
+		},
+		{
+			name:   "success",
+			status: http.StatusOK,
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				input := &dao.LuckyModel{
+					Prize:       lucky.Prize1000,
+					Email:       "123@gmail.com",
+					KycLevel:    "KYC2",
+					Personality: "IATC",
+				}
+				luckyDao.EXPECT().Create(gomock.Any(), input).Return(nil)
+			},
+		},
+	}
+
+	err := os.Setenv("UNIT_TEST", "true")
+	assert.NoError(t, err)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request, _ = http.NewRequest("POST", "/lucky/draw", nil)
+			c.Request.Header.Set("Content-Type", "application/json")
+
+			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC")
+			claims.Prize = tc.prize
+			c.Set(consts.HeaderDRAWTOKEN, claims)
+
+			if tc.mockFn != nil {
+				tc.mockFn(&tc)
+			}
+			tc.lucky.Draw(c)
+			assert.Equal(t, tc.status, w.Code, "checking status code")
+
+			var rw dto.ResponseFormat
+			assert.Nil(t, json.Unmarshal(w.Body.Bytes(), &rw), "unmarshalling response body")
+			if tc.errorReason != "" {
+				assert.Contains(t, rw.Msg, tc.errorReason, "checking error reason")
+				return
+			}
+
+			var rsp dto.LuckyDrawRsp
+			data, err := json.Marshal(rw.Data)
+			assert.NoError(t, err)
+			err = json.Unmarshal(data, &rsp)
+			assert.NoError(t, err)
+			assert.Equal(t, lucky.Prize1000, rsp.Prize, "checking prize")
+
+			var uc *jwt.UserClaims
+			newClaims, err := uc.Parse(rsp.Token)
+			assert.NoError(t, err)
+			assert.Equal(t, "123@gmail.com", newClaims.Email, "checking email")
+			assert.Equal(t, "KYC2", newClaims.KycLevel, "checking kycLevel")
+			assert.Equal(t, "IATC", newClaims.Personality, "checking personality")
+			assert.Equal(t, lucky.Prize1000, newClaims.Prize, "checking prize")
+			assert.Equal(t, config.GetConfig().Jwt.Issuer, newClaims.Issuer, "checking issuer")
+			assert.InDelta(t, time.Now().Add(time.Hour*time.Duration(24*7)).Unix(), newClaims.ExpiresAt.Unix(), 10)
+		})
+	}
 }

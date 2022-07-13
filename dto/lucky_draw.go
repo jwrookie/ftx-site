@@ -34,3 +34,8 @@ type LuckyAwardRsp struct {
 type LuckyGetJackpotRsp struct {
 	Jackpot uint64 `json:"jackpot,string"`
 }
+
+type LuckyDrawRsp struct {
+	Prize string `json:"prize"`
+	Token string `json:"token"`
+}
