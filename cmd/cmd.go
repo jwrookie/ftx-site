@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/foxdex/ftx-site/pkg/lucky"
+
 	"github.com/foxdex/ftx-site/pkg/db"
 	"github.com/hashicorp/go-multierror"
 	"go.uber.org/zap"
@@ -86,6 +88,7 @@ func setup() {
 
 func initApp() {
 	db.NewMysql()
+	lucky.InitJackpot(nil)
 }
 
 func resourceRelease() error {

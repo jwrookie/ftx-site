@@ -11,6 +11,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/foxdex/ftx-site/config"
+
 	"github.com/foxdex/ftx-site/pkg/lucky"
 
 	"github.com/foxdex/ftx-site/pkg/consts"
@@ -96,7 +98,24 @@ func TestCreateToken(t *testing.T) {
 			assert.Nil(t, json.Unmarshal(w.Body.Bytes(), &rw), "unmarshalling response body")
 			if tc.errorReason != "" {
 				assert.Contains(t, rw.Msg, tc.errorReason, "checking error reason")
+				return
 			}
+
+			var (
+				uc  *jwt.UserClaims
+				rsp dto.LuckyCreateTokenRsp
+			)
+			data, err := json.Marshal(rw.Data)
+			assert.NoError(t, err)
+			err = json.Unmarshal(data, &rsp)
+			assert.NoError(t, err)
+
+			claims, err := uc.Parse(rsp.Token)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.payload.Email, claims.Email, "checking email")
+			assert.Equal(t, tc.payload.KycLevel, claims.KycLevel, "checking kycLevel")
+			assert.Equal(t, tc.payload.Personality, claims.Personality, "checking personality")
+			assert.Equal(t, config.GetConfig().Jwt.Issuer, claims.Issuer, "checking issuer")
 		})
 	}
 }
@@ -313,7 +332,7 @@ func TestGetJackpot(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/lucky/jackpot", nil)
-
+	lucky.InitJackpot(mockDao)
 	handler.GetJackpot(c)
 	assert.Equal(t, 200, w.Code, "checking status code")
 
@@ -392,6 +411,8 @@ func TestDraw(t *testing.T) {
 				}
 				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(false, nil)
 				luckyDao.EXPECT().Create(gomock.Any(), input).Return(nil)
+				luckyDao.EXPECT().Count(gomock.Any()).Return(int64(0), nil)
+				lucky.InitJackpot(luckyDao)
 			},
 		},
 	}

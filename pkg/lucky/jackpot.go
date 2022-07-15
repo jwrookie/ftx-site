@@ -44,6 +44,9 @@ func (j *jackpot) incJackpot() uint64 {
 }
 
 func InitJackpot(luckyDao dao.ILucky) {
+	if luckyDao == nil {
+		luckyDao = &dao.LuckyHandler{}
+	}
 	once.Do(func() {
 		count, err := luckyDao.Count(db.Mysql())
 		if err != nil {

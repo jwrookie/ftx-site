@@ -38,7 +38,7 @@ func (h *LuckyDrawHandler) CreateToken(c *gin.Context) {
 		return
 	}
 
-	token, err := jwt.NewUserClaims(req.Email, req.Personality, req.KycLevel).Generator()
+	token, err := jwt.NewUserClaims(req.Email, req.KycLevel, req.Personality).Generator()
 	if err != nil {
 		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
 		log.Log.Error("create json web token error", zap.Error(err))
@@ -83,6 +83,8 @@ func (h *LuckyDrawHandler) Draw(c *gin.Context) {
 		log.Log.Error("create lucky", zap.Error(err))
 		return
 	}
+
+	lucky.IncJackpot()
 
 	dto.SuccessResponse(c, &dto.LuckyDrawRsp{
 		Prize: prize,
@@ -151,6 +153,5 @@ func (h *LuckyDrawHandler) GetResult(c *gin.Context) {
 
 // GetJackpot get jackpot
 func (h *LuckyDrawHandler) GetJackpot(c *gin.Context) {
-	lucky.InitJackpot(h.luckyDao)
 	dto.SuccessResponse(c, &dto.LuckyGetJackpotRsp{Jackpot: lucky.GetJackpot()})
 }
