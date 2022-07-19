@@ -3,6 +3,7 @@ install-tools: ## Install necessary tools
 	@bash -c 'go install github.com/golang/mock/mockgen@v1.6.0'
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.46.2
 	@go install golang.org/x/tools/cmd/goimports@latest
+	@npm install -g markdownlint-cli@0.25.0
 
 .PHONY: codegen
 codegen: ## Run code generation
@@ -24,5 +25,9 @@ lint: ## Apply go lint check
 test: ## Run the unit tests
 	@UNIT_TEST=true go test -v ./... -count 1 -failfast -short
 
+.PHONY: c
+mdlint:
+	@markdownlint '**/*.md' --ignore node_modules
+
 .PHONY: precommit
-precommit: gofmt goimports lint test
+precommit: gofmt goimports lint test mdlint

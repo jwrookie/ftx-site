@@ -92,15 +92,21 @@ curl --location --request POST 'http://127.0.0.1:8080/lucky/award' \
 
 > payload：
 >
-> prize: string, required, one of `FTX x MLB棒球外套` `FTX束口袋背包` `FTX棒球帽` `FTX灰色T恤` `交易手续费抵扣券10USD` `FTX小龙人暖手充电宝` `FTX雪花真空杯` `FTX超萌小耳朵发箍 + 小金勺子`
+> prize: string, required, one of `FTX三周年礼盒` `FTX x AMG联合棒球帽` `FTX x MLB 棒球外套` `交易手续费抵扣券10USD` `FTX祝福红包` `FTX清凉防晒衣` `FTX绒绒袜` `FTX小龙人暖手充电宝` `FTX雪花真空杯+小金勺子` `FTX超萌小耳朵发箍` `FTX定制纸牌`
 >
-> clothes_size: string, required when prize is FTX灰色T恤
+> clothes_size: string, required when prize is `FTX x MLB 棒球外套` or `FTX清凉防晒衣`
 >
 > user_name: string, required
 >
 > user_phone: string, required
 >
 > address: string, required
+>
+> country: string, required
+>
+> region: string, required
+>
+> postal_code: string, required
 
 ### 获取奖池金额
 
