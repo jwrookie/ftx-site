@@ -57,7 +57,7 @@ curl --location --request POST 'http://127.0.0.1:8080/lucky/draw' \
   "code": 0,
   "msg": "ok",
   "data": {
-    "prize": "FTX束口袋背包"
+    "prize": "FTX三周年礼盒"
   }
 }
 ```
@@ -72,10 +72,13 @@ curl --location --request POST 'http://127.0.0.1:8080/lucky/award' \
 --header 'CSRF-TOKEN: lwhbjvf4hiqgeulbakjrq54fwelfn11ksdfj65ksdg63lgrndlkKE2FJLFK' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "prize": "FTX束口袋背包",
+    "prize": "FTX三周年礼盒",
     "user_name": "jw",
     "user_phone": "12311112222",
-    "address": "xxx"
+    "address": "xxx",
+    "country": "cn",
+    "region": "sz",
+    "postal_code": "000000"
 }' | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -137,6 +140,9 @@ curl --location --request GET 'http://127.0.0.1:8080/lucky/1231@gmail.com' \
     "user_name": "jw",
     "user_phone": "12311112222",
     "address": "xxx",
+    "country": "cn",
+    "region": "sz",
+    "postal_code": "000000",
     "created_at": 1658115747822,
     "updated_at": 1658115747822,
     "deleted_at": 0

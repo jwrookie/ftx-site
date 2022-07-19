@@ -46,7 +46,7 @@ func TestDraw(t *testing.T) {
 		assert.Equal(t, 1000, len(prizePool))
 		t.Log(prizePool)
 
-		pool := map[string]int64{}
+		pool := map[string]int{}
 		for _, v := range prizePool {
 			pool[codePrize[v]] = pool[codePrize[v]] + 1
 		}
@@ -69,10 +69,13 @@ func TestDraw(t *testing.T) {
 			t.Logf("%s : %d", k, pool[k])
 		}
 
-		assert.Greater(t, pool[Prize1000], pool[Prize80])
-		assert.Greater(t, pool[Prize80], pool[Prize70])
+		assert.Greater(t, pool[Prize1000], pool[Prize110])
+		assert.Greater(t, pool[Prize110], pool[Prize100])
+		assert.Greater(t, pool[Prize100], pool[Prize60])
+		assert.Greater(t, pool[Prize90], pool[Prize60])
+		assert.Greater(t, pool[Prize80], pool[Prize60])
+		assert.Greater(t, pool[Prize70], pool[Prize60])
 		assert.Greater(t, pool[Prize60], pool[Prize50])
-		assert.Greater(t, pool[Prize40], pool[Prize30])
-		assert.Greater(t, pool[Prize30], pool[Prize10])
+		assert.Greater(t, pool[Prize50], pool[Prize40])
 	})
 }

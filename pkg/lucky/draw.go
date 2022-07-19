@@ -8,58 +8,71 @@ import (
 )
 
 const (
-	Prize10   = "FTX x MLB棒球外套"
-	Prize20   = "FTX束口袋背包"
-	Prize30   = "FTX棒球帽"
-	Prize40   = "FTX灰色T恤"
-	Prize50   = "交易手续费抵扣券10USD"
-	Prize60   = "FTX小龙人暖手充电宝"
-	Prize70   = "FTX雪花真空杯"
-	Prize80   = "FTX超萌小耳朵发箍 + 小金勺子"
+	Prize10   = "FTX三周年礼盒"
+	Prize20   = "FTX x AMG联合棒球帽"
+	Prize30   = "FTX x MLB 棒球外套"
+	Prize40   = "交易手续费抵扣券10USD"
+	Prize50   = "FTX祝福红包"
+	Prize60   = "FTX清凉防晒衣"
+	Prize70   = "FTX绒绒袜"
+	Prize80   = "FTX小龙人暖手充电宝"
+	Prize90   = "FTX雪花真空杯+小金勺子"
+	Prize100  = "FTX超萌小耳朵发箍"
+	Prize110  = "FTX定制纸牌"
 	Prize1000 = "谢谢参与"
 )
 
-var codePrize = map[int8]string{
-	1: Prize10,
-	2: Prize20,
-	3: Prize30,
-	4: Prize40,
-	5: Prize50,
-	6: Prize60,
-	7: Prize70,
-	8: Prize80,
-	9: Prize1000,
+var codePrize = map[int]string{
+	10:  Prize10,
+	20:  Prize20,
+	30:  Prize30,
+	40:  Prize40,
+	50:  Prize50,
+	60:  Prize60,
+	70:  Prize70,
+	80:  Prize80,
+	90:  Prize90,
+	100: Prize100,
+	110: Prize110,
+
+	1000: Prize1000,
 }
 
-var prizeCode = map[string]int8{
-	Prize10:   1,
-	Prize20:   2,
-	Prize30:   3,
-	Prize40:   4,
-	Prize50:   5,
-	Prize60:   6,
-	Prize70:   7,
-	Prize80:   8,
-	Prize1000: 9,
-}
-
-var prize = map[string]int64{
-	Prize10:   5,
-	Prize20:   30,
+var prizeCode = map[string]int{
+	Prize10:   10,
+	Prize20:   20,
 	Prize30:   30,
-	Prize40:   50,
+	Prize40:   40,
 	Prize50:   50,
-	Prize60:   70,
+	Prize60:   60,
 	Prize70:   70,
-	Prize80:   100,
-	Prize1000: 595,
+	Prize80:   80,
+	Prize90:   90,
+	Prize100:  100,
+	Prize110:  110,
+	Prize1000: 1000,
 }
 
-var prizePool []int8
+var prize = map[string]int{
+	Prize10:   2,
+	Prize20:   3,
+	Prize30:   4,
+	Prize40:   5,
+	Prize50:   10,
+	Prize60:   30,
+	Prize70:   50,
+	Prize80:   50,
+	Prize90:   50,
+	Prize100:  50,
+	Prize110:  100,
+	Prize1000: 646,
+}
+
+var prizePool []int
 
 func init() {
 	for k, v := range prize {
-		for i := 0; i < int(v); i++ {
+		for i := 0; i < v; i++ {
 			prizePool = append(prizePool, prizeCode[k])
 		}
 	}

@@ -103,8 +103,8 @@ func (h *LuckyDrawHandler) Award(c *gin.Context) {
 		return
 	}
 
-	if req.Prize == lucky.Prize40 && req.ClothesSize == "" {
-		dto.FailResponse(c, http.StatusBadRequest, "clothes size is required when prize is FTX灰色T恤")
+	if (req.Prize == lucky.Prize30 || req.Prize == lucky.Prize60) && req.ClothesSize == "" {
+		dto.FailResponse(c, http.StatusBadRequest, "clothes size is required when prize is FTX x MLB 棒球外套 or FTX清凉防晒衣")
 		return
 	}
 
@@ -112,6 +112,9 @@ func (h *LuckyDrawHandler) Award(c *gin.Context) {
 		"clothes_size": req.ClothesSize,
 		"user_name":    req.UserName,
 		"user_phone":   req.UserPhone,
+		"country":      req.Country,
+		"region":       req.Region,
+		"postal_code":  req.PostalCode,
 		"address":      req.Address,
 	}
 

@@ -247,14 +247,17 @@ func TestAward(t *testing.T) {
 			},
 		},
 		{
-			name:        "clothes size is required when prize is FTX灰色T恤",
+			name:        "clothes size is required when prize is FTX x MLB 棒球外套 or FTX清凉防晒衣",
 			status:      http.StatusBadRequest,
-			errorReason: "clothes size is required when prize is FTX灰色T恤",
+			errorReason: "clothes size is required when prize is FTX x MLB 棒球外套 or FTX清凉防晒衣",
 			payload: &dto.LuckyAwardReq{
-				Prize:     lucky.Prize40,
-				UserName:  "jw",
-				UserPhone: "12311112222",
-				Address:   "xx省xx市xx区xxxx小区",
+				Prize:      lucky.Prize30,
+				UserName:   "jw",
+				UserPhone:  "12311112222",
+				Address:    "xx省xx市xx区xxxx小区",
+				Country:    "cn",
+				Region:     "sz",
+				PostalCode: "000000",
 			},
 		},
 		{
@@ -262,10 +265,13 @@ func TestAward(t *testing.T) {
 			status:      http.StatusInternalServerError,
 			errorReason: `mock error`,
 			payload: &dto.LuckyAwardReq{
-				Prize:     lucky.Prize50,
-				UserName:  "jw",
-				UserPhone: "12311112222",
-				Address:   "xx省xx市xx区xxxx小区",
+				Prize:      lucky.Prize50,
+				UserName:   "jw",
+				UserPhone:  "12311112222",
+				Address:    "xx省xx市xx区xxxx小区",
+				Country:    "cn",
+				Region:     "sz",
+				PostalCode: "000000",
 			},
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
@@ -277,10 +283,13 @@ func TestAward(t *testing.T) {
 			name:   "success",
 			status: http.StatusOK,
 			payload: &dto.LuckyAwardReq{
-				Prize:     lucky.Prize50,
-				UserName:  "jw",
-				UserPhone: "12311112222",
-				Address:   "xx省xx市xx区xxxx小区",
+				Prize:      lucky.Prize50,
+				UserName:   "jw",
+				UserPhone:  "12311112222",
+				Address:    "xx省xx市xx区xxxx小区",
+				Country:    "cn",
+				Region:     "sz",
+				PostalCode: "000000",
 			},
 			mockFn: func(testCase *TestCase) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
@@ -291,6 +300,9 @@ func TestAward(t *testing.T) {
 					"user_phone":   "12311112222",
 					"address":      "xx省xx市xx区xxxx小区",
 					"clothes_size": "",
+					"country":      "cn",
+					"region":       "sz",
+					"postal_code":  "000000",
 				}
 				luckyDao.EXPECT().Update(gomock.Any(), "123@gmail.com", input).Return(nil)
 			},

@@ -14,6 +14,9 @@ type LuckyModel struct {
 	ClothesSize string `json:"clothes_size"`
 	UserName    string `json:"user_name"`
 	UserPhone   string `json:"user_phone"`
+	Country     string `json:"country"`
+	Region      string `json:"region"`
+	PostalCode  string `json:"postal_code"`
 	Address     string `json:"address"`
 
 	CreatedAt uint64 `json:"created_at"`
