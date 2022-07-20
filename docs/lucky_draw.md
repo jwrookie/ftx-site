@@ -111,7 +111,7 @@ curl --location --request POST 'http://127.0.0.1:8080/lucky/award' \
 >
 > postal_code: string, required
 
-### 获取奖池金额
+## 获取奖池金额
 
 ```curl
 curl --location --request GET 'http://127.0.0.1:8080/lucky/jackpot' \
@@ -159,3 +159,28 @@ curl --location --request GET 'http://127.0.0.1:8080/lucky/1231@gmail.com' \
   }
 }
 ```
+
+> uri params:
+>
+> email: required, email format
+
+## 查看抽奖码
+
+```curl
+curl --location --request GET 'http://127.0.0.1:8080/lucky/tickets/123@gmail.com' \
+--header 'CSRF-TOKEN: lwhbjvf4hiqgeulbakjrq54fwelfn11ksdfj65ksdg63lgrndlkKE2FJLFK' | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    42  100    42    0     0    401      0 --:--:-- --:--:-- --:--:--   428
+{
+  "code": 0,
+  "msg": "ok",
+  "data": {
+    "count": "2"
+  }
+}
+```
+
+> uri params:
+>
+> email: required, email format
