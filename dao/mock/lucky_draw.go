@@ -50,6 +50,21 @@ func (mr *MockILuckyMockRecorder) Count(db interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Count", reflect.TypeOf((*MockILucky)(nil).Count), db)
 }
 
+// CountByEmail mocks base method.
+func (m *MockILucky) CountByEmail(db *gorm.DB, email string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByEmail", db, email)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByEmail indicates an expected call of CountByEmail.
+func (mr *MockILuckyMockRecorder) CountByEmail(db, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByEmail", reflect.TypeOf((*MockILucky)(nil).CountByEmail), db, email)
+}
+
 // Create mocks base method.
 func (m *MockILucky) Create(db *gorm.DB, model *dao.LuckyModel) error {
 	m.ctrl.T.Helper()

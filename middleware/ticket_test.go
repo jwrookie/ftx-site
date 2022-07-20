@@ -46,7 +46,7 @@ func TestTicket(t *testing.T) {
 
 		req := httptest.NewRequest("POST", "/", nil)
 
-		claims := jwt.NewUserClaims("1", "2", "3")
+		claims := jwt.NewUserClaims("1", "2", "3", "")
 		token, err := claims.Generator()
 		assert.NoError(t, err)
 		req.Header.Set(consts.HeaderDRAWTOKEN, token)

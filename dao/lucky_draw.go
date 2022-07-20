@@ -6,18 +6,19 @@ import (
 )
 
 type LuckyModel struct {
-	LuckyId     uint64 `json:"lucky_id,string" gorm:"primaryKey"`
-	Email       string `json:"email"`
-	KycLevel    string `json:"kyc_level"`
-	Personality string `json:"personality"`
-	Prize       string `json:"prize"`
-	ClothesSize string `json:"clothes_size"`
-	UserName    string `json:"user_name"`
-	UserPhone   string `json:"user_phone"`
-	Country     string `json:"country"`
-	Region      string `json:"region"`
-	PostalCode  string `json:"postal_code"`
-	Address     string `json:"address"`
+	LuckyId      uint64 `json:"lucky_id,string" gorm:"primaryKey"`
+	Email        string `json:"email"`
+	KycLevel     string `json:"kyc_level"`
+	Personality  string `json:"personality"`
+	Prize        string `json:"prize"`
+	ClothesSize  string `json:"clothes_size"`
+	UserName     string `json:"user_name"`
+	UserPhone    string `json:"user_phone"`
+	Country      string `json:"country"`
+	Region       string `json:"region"`
+	PostalCode   string `json:"postal_code"`
+	Address      string `json:"address"`
+	InviterEmail string `json:"inviter_email"`
 
 	CreatedAt uint64 `json:"created_at"`
 	UpdatedAt uint64 `json:"updated_at"`
@@ -30,6 +31,7 @@ type ILucky interface {
 	Create(db *gorm.DB, model *LuckyModel) error
 	Update(db *gorm.DB, email string, updates map[string]interface{}) error
 	Count(db *gorm.DB) (int64, error)
+	CountByEmail(db *gorm.DB, email string) (int64, error)
 }
 
 type LuckyHandler struct{}
@@ -96,4 +98,16 @@ func (l *LuckyHandler) Update(db *gorm.DB, email string, updates map[string]inte
 	}
 
 	return nil
+}
+
+func (l *LuckyHandler) CountByEmail(db *gorm.DB, email string) (int64, error) {
+	var (
+		err   error
+		count int64
+	)
+	if err = db.Table("lucky").Where("inviter_email = ?", email).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

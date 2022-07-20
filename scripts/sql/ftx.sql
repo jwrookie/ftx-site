@@ -13,9 +13,11 @@ CREATE TABLE IF NOT EXISTS `lucky` (
     `region` varchar(255)  NOT NULL DEFAULT '' COMMENT '行政区域',
     `postal_code` varchar(255)  NOT NULL DEFAULT '' COMMENT '邮编',
     `address` varchar(255) NOT NULL DEFAULT '' COMMENT '收件地址',
+    `inviter_email` varchar(255) NOT NULL DEFAULT '' COMMENT '邀请人邮箱',
     `created_at` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
     `updated_at` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '修改时间',
     `deleted_at` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '删除时间',
     PRIMARY KEY (`lucky_id`) USING BTREE,
-    UNIQUE KEY `email` (`email`)
+    UNIQUE KEY `email` (`email`),
+    KEY `inviter_email` (`inviter_email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='中奖信息表';

@@ -3,9 +3,10 @@ package dto
 import "github.com/foxdex/ftx-site/dao"
 
 type LuckyCreateTokenReq struct {
-	Email       string `json:"email" form:"email" binding:"required,email"`
-	KycLevel    string `json:"kyc_level" form:"kyc_level" binding:"required,oneof=KYC0 KYC1 KYC2"`
-	Personality string `json:"personality" form:"personality" binding:"required,oneof=IATC EATC IATM EATM IAFC EAFC IAFM EAFM IPTC EPTC IPTM EPTM IPFC EPFC IPFM EPTM"`
+	Email        string `json:"email" form:"email" binding:"required,email"`
+	KycLevel     string `json:"kyc_level" form:"kyc_level" binding:"required,oneof=KYC0 KYC1 KYC2"`
+	Personality  string `json:"personality" form:"personality" binding:"required,oneof=IATC EATC IATM EATM IAFC EAFC IAFM EAFM IPTC EPTC IPTM EPTM IPFC EPFC IPFM EPTM"`
+	InviterEmail string `json:"inviter_email" form:"inviter_email" binding:"omitempty,email"`
 }
 
 type LuckyCreateTokenRsp struct {
@@ -41,4 +42,12 @@ type LuckyGetJackpotRsp struct {
 
 type LuckyDrawRsp struct {
 	Prize string `json:"prize"`
+}
+
+type GetTicketsReq struct {
+	Email string `form:"email" uri:"email" binding:"required,email"`
+}
+
+type GetTicketsRsp struct {
+	Count uint64 `json:"count,string"`
 }

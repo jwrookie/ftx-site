@@ -20,7 +20,8 @@ curl --location --request POST 'http://127.0.0.1:8080/lucky/token' \
 --data-raw '{
     "email": "1231@gmail.com",
     "kyc_level": "KYC0",
-    "personality":"IATC"
+    "personality":"IATC",
+    "inviter_email" : "456@gmail.com"
 }' | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -41,6 +42,8 @@ curl --location --request POST 'http://127.0.0.1:8080/lucky/token' \
 > kyc_level: string, required，one of `KYC0` `KYC1` `KYC2`
 >
 > personality: string, required，one of `IATC` `EATC` `IATM` `EATM` `IAFC` `EAFC` `IAFM` `EAFM` `IPTC` `EPTC` `IPTM` `EPTM` `IPFC` `EPFC` `IPFM` `EPTM`
+>
+> inviter_email : string, email format
 
 ## 进行抽奖
 
@@ -149,6 +152,7 @@ curl --location --request GET 'http://127.0.0.1:8080/lucky/1231@gmail.com' \
     "country": "cn",
     "region": "sz",
     "postal_code": "000000",
+    "inviter_email" : "456@gmail.com",
     "created_at": 1658115747822,
     "updated_at": 1658115747822,
     "deleted_at": 0

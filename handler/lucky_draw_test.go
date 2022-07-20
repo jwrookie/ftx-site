@@ -73,12 +73,33 @@ func TestCreateToken(t *testing.T) {
 			},
 		},
 		{
-			name:   "when params are ok, create token should successfully",
+			name:        "when inviter email is invalid, should get 400",
+			status:      http.StatusBadRequest,
+			errorReason: `Error:Field validation for 'InviterEmail' failed on the 'email' tag`,
+			payload: &dto.LuckyCreateTokenReq{
+				Email:        "123@gmail.com",
+				KycLevel:     "KYC0",
+				Personality:  "IATC",
+				InviterEmail: "invalid email",
+			},
+		},
+		{
+			name:   "when without inviter email, create token should successfully",
 			status: http.StatusOK,
 			payload: &dto.LuckyCreateTokenReq{
 				Email:       "123@gmail.com",
 				KycLevel:    "KYC0",
 				Personality: "IATC",
+			},
+		},
+		{
+			name:   "when params are ok, create token should successfully",
+			status: http.StatusOK,
+			payload: &dto.LuckyCreateTokenReq{
+				Email:        "123@gmail.com",
+				KycLevel:     "KYC0",
+				Personality:  "IATC",
+				InviterEmail: "456@gmail.com",
 			},
 		},
 	}
@@ -115,6 +136,7 @@ func TestCreateToken(t *testing.T) {
 			assert.Equal(t, tc.payload.Email, claims.Email, "checking email")
 			assert.Equal(t, tc.payload.KycLevel, claims.KycLevel, "checking kycLevel")
 			assert.Equal(t, tc.payload.Personality, claims.Personality, "checking personality")
+			assert.Equal(t, tc.payload.InviterEmail, claims.InviterEmail, "checking inviter email")
 			assert.Equal(t, config.GetConfig().Jwt.Issuer, claims.Issuer, "checking issuer")
 		})
 	}
@@ -318,7 +340,7 @@ func TestAward(t *testing.T) {
 			body, _ := json.Marshal(tc.payload)
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 
-			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC")
+			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC", "456@gmail.com")
 			c.Set(consts.HeaderDRAWTOKEN, claims)
 
 			if tc.mockFn != nil {
@@ -400,10 +422,11 @@ func TestDraw(t *testing.T) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
 				input := &dao.LuckyModel{
-					Prize:       lucky.Prize1000,
-					Email:       "123@gmail.com",
-					KycLevel:    "KYC2",
-					Personality: "IATC",
+					Prize:        lucky.Prize1000,
+					Email:        "123@gmail.com",
+					KycLevel:     "KYC2",
+					Personality:  "IATC",
+					InviterEmail: "456@gmail.com",
 				}
 				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(false, nil)
 				luckyDao.EXPECT().Create(gomock.Any(), input).Return(errors.New("mock error"))
@@ -416,10 +439,11 @@ func TestDraw(t *testing.T) {
 				luckyDao := mock.NewMockILucky(gomock.NewController(t))
 				testCase.lucky = &LuckyDrawHandler{luckyDao}
 				input := &dao.LuckyModel{
-					Prize:       lucky.Prize1000,
-					Email:       "123@gmail.com",
-					KycLevel:    "KYC2",
-					Personality: "IATC",
+					Prize:        lucky.Prize1000,
+					Email:        "123@gmail.com",
+					KycLevel:     "KYC2",
+					Personality:  "IATC",
+					InviterEmail: "456@gmail.com",
 				}
 				luckyDao.EXPECT().EmailExist(gomock.Any(), "123@gmail.com").Return(false, nil)
 				luckyDao.EXPECT().Create(gomock.Any(), input).Return(nil)
@@ -439,7 +463,7 @@ func TestDraw(t *testing.T) {
 			c.Request, _ = http.NewRequest("POST", "/lucky/draw", nil)
 			c.Request.Header.Set("Content-Type", "application/json")
 
-			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC")
+			claims := jwt.NewUserClaims("123@gmail.com", "KYC2", "IATC", "456@gmail.com")
 			c.Set(consts.HeaderDRAWTOKEN, claims)
 
 			if tc.mockFn != nil {
@@ -461,6 +485,95 @@ func TestDraw(t *testing.T) {
 			err = json.Unmarshal(data, &rsp)
 			assert.NoError(t, err)
 			assert.Equal(t, lucky.Prize1000, rsp.Prize, "checking prize")
+		})
+	}
+}
+
+func TestGetTickets(t *testing.T) {
+	t.Parallel()
+
+	type TestCase struct {
+		name        string
+		status      int
+		errorReason string
+		lucky       *LuckyDrawHandler
+		mockFn      func(*TestCase)
+		email       string
+		expected    uint64
+	}
+
+	cases := []TestCase{
+		{
+			name:        "when email is invalid, should get 400",
+			status:      http.StatusBadRequest,
+			errorReason: `Error:Field validation for 'Email' failed on the 'email' tag`,
+			email:       "invalid",
+		},
+		{
+			name:   "db mock error",
+			status: http.StatusInternalServerError,
+			email:  "123@gmail.com",
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				luckyDao.EXPECT().CountByEmail(gomock.Any(), "123@gmail.com").Return(int64(0), errors.New("mock error"))
+			},
+			errorReason: "mock error",
+		},
+		{
+			name:   "invite more than 3 people",
+			status: http.StatusOK,
+			email:  "123@gmail.com",
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				luckyDao.EXPECT().CountByEmail(gomock.Any(), "123@gmail.com").Return(int64(4), nil)
+			},
+			expected: 4,
+		},
+		{
+			name:   "invite less than 3 people",
+			status: http.StatusOK,
+			email:  "123@gmail.com",
+			mockFn: func(testCase *TestCase) {
+				luckyDao := mock.NewMockILucky(gomock.NewController(t))
+				testCase.lucky = &LuckyDrawHandler{luckyDao}
+				luckyDao.EXPECT().CountByEmail(gomock.Any(), "123@gmail.com").Return(int64(1), nil)
+			},
+			expected: 2,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Params = gin.Params{
+				{
+					Key:   "email",
+					Value: tc.email,
+				},
+			}
+			c.Request, _ = http.NewRequest("GET", fmt.Sprintf("/lucky/tickets/%s", tc.email), nil)
+			if tc.mockFn != nil {
+				tc.mockFn(&tc)
+			}
+			tc.lucky.GetTickets(c)
+			assert.Equal(t, tc.status, w.Code, "checking status code")
+
+			var rw dto.ResponseFormat
+			assert.Nil(t, json.Unmarshal(w.Body.Bytes(), &rw), "unmarshalling response body")
+			if tc.errorReason != "" {
+				assert.Contains(t, rw.Msg, tc.errorReason, "checking error reason")
+				return
+			}
+
+			var rsp dto.GetTicketsRsp
+			data, err := json.Marshal(rw.Data)
+			assert.NoError(t, err)
+			err = json.Unmarshal(data, &rsp)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, rsp.Count, "checking count")
 		})
 	}
 }

@@ -14,17 +14,19 @@ var (
 )
 
 type UserClaims struct {
-	Email       string `json:"email"`
-	KycLevel    string `json:"kyc_level"`
-	Personality string `json:"personality"`
+	Email        string `json:"email"`
+	KycLevel     string `json:"kyc_level"`
+	Personality  string `json:"personality"`
+	InviterEmail string `json:"inviter_email"`
 	jwt.RegisteredClaims
 }
 
-func NewUserClaims(email, kycLevel, personality string) *UserClaims {
+func NewUserClaims(email, kycLevel, personality, inviterEmail string) *UserClaims {
 	return &UserClaims{
-		Email:       email,
-		KycLevel:    kycLevel,
-		Personality: personality,
+		Email:        email,
+		KycLevel:     kycLevel,
+		Personality:  personality,
+		InviterEmail: inviterEmail,
 	}
 }
 

@@ -10,6 +10,11 @@ func NewRoute(api *gin.Engine) {
 	var (
 		luckyDrawHandler = handler.DefaultLuckyDrawHandler
 	)
+
+	if gin.IsDebugging() {
+		api.Use(Cors())
+	}
+
 	api.Use(Logger(), Recovery())
 
 	conf := config.GetConfig()
@@ -22,5 +27,6 @@ func NewRoute(api *gin.Engine) {
 		lucky.POST("/award", Ticket(), luckyDrawHandler.Award)
 		lucky.GET("/:email", luckyDrawHandler.GetResult)
 		lucky.GET("/jackpot", luckyDrawHandler.GetJackpot)
+		lucky.GET("/tickets/:email", luckyDrawHandler.GetTickets)
 	}
 }

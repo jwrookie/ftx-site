@@ -38,7 +38,7 @@ func (h *LuckyDrawHandler) CreateToken(c *gin.Context) {
 		return
 	}
 
-	token, err := jwt.NewUserClaims(req.Email, req.KycLevel, req.Personality).Generator()
+	token, err := jwt.NewUserClaims(req.Email, req.KycLevel, req.Personality, req.InviterEmail).Generator()
 	if err != nil {
 		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
 		log.Log.Error("create json web token error", zap.Error(err))
@@ -157,4 +157,31 @@ func (h *LuckyDrawHandler) GetResult(c *gin.Context) {
 // GetJackpot get jackpot
 func (h *LuckyDrawHandler) GetJackpot(c *gin.Context) {
 	dto.SuccessResponse(c, &dto.LuckyGetJackpotRsp{Jackpot: lucky.GetJackpot()})
+}
+
+// GetTickets get tickets
+func (h *LuckyDrawHandler) GetTickets(c *gin.Context) {
+	var (
+		req   dto.GetTicketsReq
+		count int64
+		err   error
+	)
+
+	if err = c.ShouldBindUri(&req); err != nil {
+		dto.FailResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if count, err = h.luckyDao.CountByEmail(db.Mysql(), req.Email); err != nil {
+		dto.FailResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// have a raffle ticket yourself
+	count++
+	if count > 4 {
+		count = 4
+	}
+
+	dto.SuccessResponse(c, &dto.GetTicketsRsp{Count: uint64(count)})
 }
