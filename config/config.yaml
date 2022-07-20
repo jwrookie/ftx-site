@@ -2,7 +2,7 @@ app:
   name: ftx
   port: 8080
   model: debug
-  route_prefix: /
+  route_prefix: /ftx-site
 
 log:
   dir: /www/ftx-site/logs
