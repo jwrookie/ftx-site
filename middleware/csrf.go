@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/base64"
 	"net/http"
 	"strconv"
 
@@ -31,19 +30,13 @@ func Csrf() gin.HandlerFunc {
 			return
 		}
 
-		tokenBytes, err := base64.StdEncoding.DecodeString(token)
+		decryptToken, err := utils.Base64AESCBCDecrypt(token)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, nil)
 			return
 		}
 
-		decryptToken, err := utils.RsaDecrypt(tokenBytes, config.GetPrivateKey())
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, nil)
-			return
-		}
-
-		tokenUint, _ := strconv.ParseUint(string(decryptToken), 10, 64)
+		tokenUint, _ := strconv.ParseUint(decryptToken, 10, 64)
 		now := utils.UnixMilliNow()
 
 		// 检查时间误差

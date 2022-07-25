@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/base64"
 	"net/http/httptest"
 	"strconv"
 	"testing"
@@ -30,9 +29,8 @@ func TestCsrf(t *testing.T) {
 	})
 
 	getCsrfToken := func(ts uint64) string {
-		token, _ := utils.RsaEncrypt([]byte(strconv.Itoa(int(ts))), config.GetPublicKey())
-		tokenBytes := base64.StdEncoding.EncodeToString(token)
-		return tokenBytes
+		token, _ := utils.Base64AESCBCEncrypt(strconv.Itoa(int(ts)))
+		return token
 	}
 
 	t.Run("csrf token success", func(t *testing.T) {
