@@ -28,7 +28,7 @@ mysql:
 
 csrf:
   # 允许时间误差范围，毫秒
-  interval: 5000
+  interval: 30000
 
 jwt:
   sign_key: tHUqpxha1Dmqrs9A4nzAHtepmSfnA6cc
